@@ -4,11 +4,12 @@ import {Link, useNavigate, useSearchParams} from 'react-router-dom'
 import { IoMdMenu } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
 import profile from "../assets/profile.png"
-import { sampleChats } from '../components/constants/sampleData';
+import { sampleChats, sampleUsers } from '../components/constants/sampleData';
 import { MdEdit } from "react-icons/md";
 import { MdDone } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
 import { MdDelete } from "react-icons/md";
+import UserItem from '../components/shared/UserItem';
 const ConfirmDeleteDialog=lazy(()=>import('../components/dialogs/ConfirmDeleteDialog'));
 const AddMemberDialog=lazy(()=>import('../components/dialogs/AddMemberDialog'));
 
@@ -43,11 +44,15 @@ function Groups() {
     setConfirmDeleteDialog(false)
   }
   const openAddMemberHandler=()=>{
-    set
+    
   }
   const deleteHandler=()=>{
     console.log("Delete Handler")
     closeConfirmDeleteHandler();
+  }
+
+  const remmoveMemberHandler=(id)=>{
+    console.log("Remove Member Handler",id)
   }
 
   useEffect(()=>{
@@ -121,7 +126,7 @@ function Groups() {
   return (
     <div className='h-screen grid grid-cols-12'>
       <div 
-      className='hidden sm:block sm:col-span-4 bg-[#dcd1d1] '
+      className='hidden sm:block sm:col-span-4 bg-[#dcd1d1] overflow-auto'
       >
         <GroupsList myGroups={sampleChats} chatId={chatId}/>
       </div>
@@ -135,9 +140,18 @@ function Groups() {
         {GroupName}
         <p className='m-8 self-start font-semibold'>Members</p>
         <div
-        className='w-full box-border sm:p-4 md:px-16 space-y-8 bg-green-200 h-[50vh] overflow-auto'
+        className='w-full box-border sm:p-4  space-y-8 h-[50vh] overflow-auto flex flex-col items-center '
         >
-          ANIK BISWAS
+          {
+            sampleUsers.map(i=>(
+              <UserItem user={i}
+              key={i._id}
+               isAdded={true} 
+              styling={"p-4 rounded-[1rem] shadow-xl max-w-screen-sm"}
+              handler={remmoveMemberHandler}
+              />
+            ))
+          }
         </div>
 
         {ButtonGroup}
@@ -162,7 +176,7 @@ function Groups() {
         </button>
 
         <div className='min-h-screen w-fit bg-white'>
-        <GroupsList w={"50vw"} myGroups={sampleChats} chatId={chatId}/>
+        <GroupsList w={"50%"} myGroups={sampleChats} chatId={chatId}/>
         </div>
       </div>
     </div>
@@ -171,7 +185,7 @@ function Groups() {
 
 const GroupsList=({w="100%",myGroups=[],chatId})=>{
   return (
-    <div className={`flex flex-col gap-3 w-[${w}]`}>
+    <div className={`flex flex-col gap-3 w-[${w}] z-50 p-6`}>
       {myGroups.length>0?myGroups.map((group)=>(
         <GroupListItem group={group} chatId={chatId} key={group._id}/>
       ))

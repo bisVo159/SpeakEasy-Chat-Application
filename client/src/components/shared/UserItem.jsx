@@ -2,10 +2,10 @@ import React,{memo} from 'react'
 import { IoAdd } from "react-icons/io5";
 import { IoMdRemove } from "react-icons/io";
 
-function UserItem({user,handler,handlerIsLoading,isAdded=false}) {
+function UserItem({user,handler,handlerIsLoading,isAdded=false,styling}) {
     const {name,_id,avatar}=user
   return (
-    <div className='flex items-center justify-between w-full'>
+    <div className={`flex items-center justify-between w-full ${styling}`}>
        <div className='flex gap-x-3'>
         <img
           src={avatar}

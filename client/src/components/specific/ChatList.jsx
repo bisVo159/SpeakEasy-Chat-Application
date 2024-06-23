@@ -14,7 +14,7 @@ export default function ChatList({
 }) {
     console.log("chatId2",chatId)
   return (
-    <div>
+    <div className='overflow-auto h-screen'>
         {
             chats.map((data, index)=>{
               const {avatar,_id,name,groupChat,members}=data
