@@ -1,6 +1,6 @@
-import { Schema,model ,models,Types} from "mongoose";
+import mongoose,{ Schema,model ,Types} from "mongoose";
 
-const Shema=new Shema({
+const schema=new Schema({
     status:{
         type:String,
         default:"pending",
@@ -20,4 +20,4 @@ const Shema=new Shema({
     timestamps:true
 });
 
-export const Request=models.Request||model("Request",Schema)
+export const Request=mongoose.models.Request||model("Request",schema)

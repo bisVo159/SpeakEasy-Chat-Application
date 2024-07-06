@@ -1,6 +1,6 @@
-import { Schema,Types,model ,models} from "mongoose";
+import mongoose,{ Schema,Types,model } from "mongoose";
 
-const Shema=new Shema({
+const schema=new Schema({
     name:{
         type:String,
         required:true
@@ -23,4 +23,4 @@ const Shema=new Shema({
     timestamps:true
 });
 
-export const Chat=models.Chat||model("Chat",Schema)
+export const Chat=mongoose.models.Chat||model("Chat",schema)
