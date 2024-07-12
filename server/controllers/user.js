@@ -1,6 +1,6 @@
 import { compare } from "bcrypt"
 import {User} from "../modals/user.js"
-import { cookieOptions, emitEvent, sendToken } from "../utils/features.js"
+import { cookieOptions, emitEvent, sendToken, uploadFilesTOCloudinary } from "../utils/features.js"
 import { TryCatch } from "../middlewares/error.js"
 import { ErrorHandler } from "../utils/utility.js"
 import { Chat } from "../modals/chat.js"
@@ -18,9 +18,11 @@ const newUser=TryCatch(async(req,res,next)=>{
         return next(new ErrorHandler("Please Upload Avatar"))
     }
 
+    const result=await uploadFilesTOCloudinary([file])
+
     const avatar={
-        public_id:"sdfsd",
-        url:"asdfsd"
+        public_id:result[0].public_id,
+        url:result[0].url
     }
 
     const user=await User.create({
@@ -67,7 +69,7 @@ const logOut=TryCatch(
     }
 )
 const searchUser=TryCatch(async(req,res)=>{
-        const {name}=req.query;
+        const {name=""}=req.query;
 
         // finding all my chats
         const myChats=await Chat.find({groupChat:false,members:req.user})

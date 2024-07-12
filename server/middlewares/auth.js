@@ -8,7 +8,6 @@ const isAuthenticated=TryCatch(
      (req,res,next)=>{
         const token=req.cookies['speakEasy-token']
         if(!token) return next(new ErrorHandler("Please login to access this route",401))
-
         const decodeData=jwt.verify(token,process.env.JWT_SECRET)
         req.user=decodeData._id
         next()

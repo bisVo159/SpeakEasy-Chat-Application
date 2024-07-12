@@ -1,7 +1,13 @@
 import React, { useState,useRef } from 'react'
 import { IoMdCamera } from "react-icons/io";
 import {useFileHandler, useInputValidation,useStrongPassword} from "6pp"
-import { usernameValidator,profileImg } from '../utils/validators';
+import { usernameValidator } from '../utils/validators';
+import profileImg from "../assets/profile.png"
+import axios from 'axios';
+import { server } from '../components/constants/config';
+import { useDispatch } from 'react-redux';
+import { userExists } from '../redux/reducer/auth';
+import toast from 'react-hot-toast';
 
 function Login() {
     const [isLogin,setIsLogin]=useState(true)
@@ -17,12 +23,64 @@ function Login() {
     // const password=useStrongPassword()
     const password=useInputValidation("")
     const avatar=useFileHandler("single")
+    const dispatch=useDispatch()
 
-    const handleSignUp=(e)=>{
+    const handleLogin=async(e)=>{
         e.preventDefault()
+
+        const config={
+            withCredentials:true,
+            headers:{
+                "Content-Type":"application/json"
+            }
+        }
+
+        try {
+            const {data}=await axios.post(
+                `${server}/user/login`,
+                {
+                username:username.value,
+                password:password.value
+                },
+                config
+            )
+
+            dispatch(userExists(true))
+            toast.success(data.message)
+        } catch (error) {
+            toast.error(error?.response?.data?.message||"Something Went Wrong")
+        }
     }
-    const handleLogin=(e)=>{
+    
+    const handleSignUp=async(e)=>{
         e.preventDefault()
+
+        const config={
+            withCredentials:true,
+            headers:{
+                "Content-Type":"multipart/form-data"
+            }
+        }
+
+        const formData=new FormData()
+        formData.append("name",name.value)
+        formData.append("bio",bio.value)
+        formData.append("username",username.value)
+        formData.append("password",password.value)
+        formData.append("avatar",avatar.file)
+
+        try {
+            const {data}=await axios.post(
+                `${server}/user/new`,
+                formData,
+                config
+            )
+
+            dispatch(userExists(true))
+            toast.success(data.message)
+        } catch (error) {
+            toast.error(error?.response?.data?.message||"Something Went Wrong")
+        }
     }
 
   return (
@@ -76,7 +134,7 @@ function Login() {
                     </>)
                     :(
                         <>
-                        <h1 className='font-bold'>Sign Up</h1>
+                        <h1 className='font-bold mb-2'>Sign Up</h1>
                         <form className='space-y-3 w-full'
                         onSubmit={handleSignUp}
                         >
@@ -92,7 +150,7 @@ function Login() {
                                 )
                                 }
                                 <button className='absolute bottom-0 right-0 text-white bg-[rgba(0,0,0,0.5)] hover:bg-[rgba(0,0,0,0.7)] 
-                                w-8 h-8 flex items-center rounded-full -translate-y-5 -translate-x-2'>
+                                w-8 h-8 flex items-center rounded-full -translate-y-4 -translate-x-1'>
                                     <IoMdCamera
                                     onClick={()=>fileInputRef.current.click()}
                                      className='w-full object-cover'/>

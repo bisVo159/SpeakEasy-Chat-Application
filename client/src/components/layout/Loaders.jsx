@@ -1,7 +1,17 @@
 import React from 'react'
 
-export default function LayOutLoader() {
+export default function Loaders() {
   return (
-    <div>Loaders</div>
+    <div className="banter-loader">
+      <div className="banter-loader__box"></div>
+      <div className="banter-loader__box"></div>
+      <div className="banter-loader__box"></div>
+      <div className="banter-loader__box"></div>
+      <div className="banter-loader__box"></div>
+      <div className="banter-loader__box"></div>
+      <div className="banter-loader__box"></div>
+      <div className="banter-loader__box"></div>
+      <div className="banter-loader__box"></div>
+  </div>
   )
 }
