@@ -12,7 +12,15 @@ const fileFormat=(url="")=>{
     else return "file"
 }
 
-const transformImage=(url="",width=100)=>url
+// /dpr_auto/w_200
+const transformImage=(url="",width=100)=>{
+    // https://res.cloudinary.com/dnlldlioj/image/upload/dpr_auto/w_200/v1721453011/
+    // 566fe62c-e124-4ee3-9005-20db711f66f4.jpg
+
+    const newUrl=url.replace("upload/",`upload/dpr_auto/w_${width}/`);
+
+    return newUrl
+}
 
 const getLast7Days=()=>{
     const currentDate=moment()

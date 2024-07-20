@@ -70,6 +70,7 @@ const logOut=TryCatch(
 )
 const searchUser=TryCatch(async(req,res)=>{
         const {name=""}=req.query;
+        console.log("name",name)
 
         // finding all my chats
         const myChats=await Chat.find({groupChat:false,members:req.user})

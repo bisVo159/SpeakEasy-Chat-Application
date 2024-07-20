@@ -11,7 +11,7 @@ import {server} from "../constants/config"
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { userNotExists } from '../../redux/reducer/auth';
-import { setIsMobile, setIsSearch } from '../../redux/reducer/misc';
+import { setIsMobile, setIsSearch, setNotification } from '../../redux/reducer/misc';
 import Loaders from './Loaders';
 
 const SearchDialog= lazy(()=>import('../specific/SearchDialog')) ;
@@ -22,8 +22,8 @@ function Header() {
     const navigate=useNavigate()
     const dispatch=useDispatch()
     const {isSearch}=useSelector(state=>state.misc)
+    const {isNotification}=useSelector(state=>state.misc)
     const [isNewGroup,setIsNewGroup]=useState(false)
-    const [isNotification,seIsNotification]=useState(false)
 
     const handleMobile=()=>dispatch(setIsMobile(true))
     
@@ -32,9 +32,7 @@ function Header() {
     const openNewGroup=()=>{
         setIsNewGroup(prev=>!prev)
     }
-    const openNotification=()=>{
-        seIsNotification(prev=>!prev)
-    }
+    const openNotification=()=>dispatch(setNotification(true))
     const navigateToGroup=()=>navigate("/groups")
 
     const logOutHandler=async()=>{
@@ -51,7 +49,7 @@ function Header() {
 
   return (
     <>
-        <div className='h-16 bg-[#ea7070] static flex items-center px-8 text-white rounded-t-xl'>
+        <div className='h-16 bg-[#a5b4fc] static flex items-center px-8 text-white rounded-t-xl'>
             <h1 className='hidden sm:block text-white text-lg font-semibold '>Speak-Easy</h1>
             <button
             className='sm:hidden'
@@ -70,7 +68,7 @@ function Header() {
         </div>
         {
             isSearch&&(
-                <Suspense fallback={<Loaders/>}>
+                <Suspense fallback={<div>Loading...</div>}>
                     <SearchDialog/>
                 </Suspense>
             )

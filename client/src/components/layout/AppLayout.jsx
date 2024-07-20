@@ -19,6 +19,7 @@ const AppLayout=()=>WrappedComponent=> {
     const chatId=params.chatId;
 
     const {isMobile}=useSelector(state=>state.misc)
+    const {user}=useSelector(state=>state.auth)
     
     const {isLoading,data,isError,error,refetch}=useMyChatQuery("")
 
@@ -52,27 +53,22 @@ const AppLayout=()=>WrappedComponent=> {
           }
             
           <div className='grid  h-[calc(100vh-4rem)] grid-cols-12'>
-              <div className='h-full hidden sm:block sm:col-span-4 md:col-span-3'>
+              <div className='h-full hidden sm:block sm:col-span-4 md:col-span-3 overflow-y-auto custom-scrollbar'>
                   {
                     isLoading?<Loaders/>:(
-                      <ChatList chats={data?.chats}
+                      <ChatList 
+                      chats={data?.chats}
                       chatId={chatId}
-                      newMessagesAlert={[
-                      {
-                        chatId,
-                        count:4
-                      }
-                      ]}
                       handleDeleteChat={handleDeleteChat}
                       />
                     )
                   }
               </div>
-              <div className='h-full col-span-12 sm:col-span-8 md:col-span-5 lg:col-span-6'>
-              <WrappedComponent {...props}/>
+              <div className='h-full col-span-12 sm:col-span-8 md:col-span-5 lg:col-span-6 overflow-y-auto custom-scrollbar'>
+              <WrappedComponent {...props} chatId={chatId} user={user}/>
               </div>
-              <div className='h-full hidden md:block md:col-span-4 lg:col-span-3 p-8 bg-[rgba(0,0,0,.85)]'>
-                <Profile/>
+              <div className='h-full hidden md:block md:col-span-4 lg:col-span-3 p-8 bg-[rgba(0,0,0,.85)] overflow-y-auto'>
+                <Profile user={user}/>
               </div>
           </div>
         </>

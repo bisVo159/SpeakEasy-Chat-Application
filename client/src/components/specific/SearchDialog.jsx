@@ -1,46 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {useInputValidation} from "6pp"
 import UserItem from '../shared/UserItem'
-import { sampleUsers } from '../constants/sampleData'
 import { useDispatch, useSelector } from 'react-redux'
 import useOnClickOutside from '../../hooks/useOnClickOutside'
 import { setIsSearch } from '../../redux/reducer/misc'
-import { useLazySearchUserQuery } from '../../redux/api/api'
-import { searchUser } from '../../../../server/controllers/user'
-import axios from 'axios'
-import { server } from '../constants/config'
-
+import { useLazySearchUserQuery, useSendFrindRequestMutation } from '../../redux/api/api'
+import { useAsyncMutation } from '../../hooks/hook'
 
 function SearchDialog() {
 
   const {isSearch}=useSelector(state=>state.misc)
   const [searchUser]=useLazySearchUserQuery();
+  const [sendFriendRequest,isLoadingFriendRequest]=useAsyncMutation(useSendFrindRequestMutation)
 
   const dispatch=useDispatch()
   const  search=useInputValidation("")
   const ref=useRef()
   useOnClickOutside(ref,()=>dispatch(setIsSearch(false)))
 
-  let isLoadingFriendRequest=false
-  const [users,setUsers]=useState(sampleUsers)
+  const [users,setUsers]=useState([])
 
-  const addFriendHandler=(is)=>{
-    console.log(id)
+  const addFriendHandler=async(id)=>{
+    await sendFriendRequest("Sending Friend Request",{userId:id})
   }
 
   useEffect(()=>{
     const timeOutId=setTimeout(() => {
-      // searchUser(search.value).then(({data})=>console.log(data))
-      // .catch((e)=>console.log(e))
-      try {
-        // axios.get(`${server}/user/search?name=${search.value}`)
-        // .then(({data})=>console.log(data))
-        // .catch((e)=>console.log(e))
-        console.log("search.value",search.value)
-      } catch (error) {
-        console.log(error)
-      }
-
+        searchUser(search.value).then(({data})=>setUsers(data.users))
+        .catch((e)=>console.log(e))
     }, 1000);
     
     return ()=>{
@@ -53,7 +40,7 @@ function SearchDialog() {
     className='fixed inset-0 z-[1000] !mt-0 grid place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm'>
       <div 
       ref={ref}
-      className='flex flex-col items-center w-96 bg-white py-10 px-4 rounded-md gap-3'>
+      className='flex flex-col items-center w-96 max-h-96 bg-white py-10 px-4 rounded-md gap-3'>
         <h1 className=''>Find People</h1>
         <div className="relative w-3/4">
           <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -70,7 +57,7 @@ function SearchDialog() {
           />
         </div>
         
-        <ul className='flex flex-col gap-y-3 w-3/4 px-3'>
+        <ul className='flex flex-col gap-y-3 w-3/4 px-3 overflow-y-scroll custom-scrollbar custom-scrollbar'>
             {
               users?.map((user,i)=>(
                 <li key={i}>

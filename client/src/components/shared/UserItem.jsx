@@ -1,6 +1,7 @@
 import React,{memo} from 'react'
 import { IoAdd } from "react-icons/io5";
 import { IoMdRemove } from "react-icons/io";
+import { transformImage } from '../../lib/features';
 
 function UserItem({user,handler,handlerIsLoading,isAdded=false,styling}) {
     const {name,_id,avatar}=user
@@ -8,7 +9,7 @@ function UserItem({user,handler,handlerIsLoading,isAdded=false,styling}) {
     <div className={`flex items-center justify-between w-full ${styling}`}>
        <div className='flex gap-x-3'>
         <img
-          src={avatar}
+          src={transformImage(avatar)}
           className='w-8 aspect-square rounded-full '
           />
           <h1

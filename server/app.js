@@ -6,6 +6,11 @@ import cookieParser from "cookie-parser"
 import { v4 as uuid } from "uuid"
 import cors from 'cors'
 import {v2 as cloudinary} from "cloudinary"
+import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/events.js"
+import {getSockets} from "./lib/helper.js"
+import { Message } from "./modals/message.js"
+import { corsOptions } from "./constants/config.js"
+import { socketAuthenticator } from "./middlewares/auth.js"
 
 import { Server } from "socket.io"
 import { createServer } from "http"
@@ -13,9 +18,7 @@ import { createServer } from "http"
 import userRoutes from "./routes/user.js"
 import chatRoute from "./routes/chat.js"
 import adminRoute from "./routes/admin.js"
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/events.js"
-import {getSockets} from "./lib/helper.js"
-import { Message } from "./modals/message.js"
+
 const userSocketIDs=new Map();
 
 dotenv.config({
@@ -37,17 +40,12 @@ cloudinary.config({
 
 const app=express()
 const server=createServer(app)
-const io=new Server(server,{})
+const io=new Server(server,{cors:corsOptions})
 
 // to access all api usig middleware
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors({
-    origin:["http://localhost:5173",
-        "http://localhost:4173",
-        process.env.CLIENT_URL],
-    credentials:true
-}))
+app.use(cors(corsOptions))
 
 app.use("/api/v1/user",userRoutes)
 app.use("/api/v1/chat",chatRoute)
@@ -57,17 +55,21 @@ app.get('/',(req,res)=>{
     res.send("Home")
 })
 
-io.use((socket,next)=>{})
+io.use((socket,next)=>{
+    cookieParser()(
+        socket.request,
+        socket.request.res,
+        async(err)=>await socketAuthenticator(err,socket,next)
+    )
+})
 
 io.on("connection",(socket)=>{
-    console.log("anik")
     const user={
         _id:"jherkgehg",
         name:"mandoza",
     }
-    userSocketIDs.set(user._id.toString(),socket.id);
-
-    console.log("map ",userSocketIDs)
+    // console.log("socket.user",socket.user)
+    userSocketIDs.set(socket.user._id.toString(),socket.id);
 
     socket.on(NEW_MESSAGE,async({chatId,members,message})=>{
 
@@ -75,8 +77,8 @@ io.on("connection",(socket)=>{
             content:message,
             _id:uuid(),
             sender:{
-                _id:user._id,
-                name:user.name
+                _id:socket.user._id,
+                name:socket.user.name
             },
             chat:chatId,
             createdAt:new Date().toISOString()
@@ -84,10 +86,11 @@ io.on("connection",(socket)=>{
 
         const messageForDB={
             content:message,
-            sender:user._id,
+            sender:socket.user._id,
             chat:chatId,
         }
 
+        console.log("Emitting Message for real time ",messageForRealTIme)
         const memberSocket=getSockets(members)
         io.to(memberSocket).emit(NEW_MESSAGE,{
             chatId,message:messageForRealTIme

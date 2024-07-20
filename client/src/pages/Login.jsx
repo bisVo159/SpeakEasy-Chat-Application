@@ -45,7 +45,7 @@ function Login() {
                 config
             )
 
-            dispatch(userExists(true))
+            dispatch(userExists(data?.data))
             toast.success(data.message)
         } catch (error) {
             toast.error(error?.response?.data?.message||"Something Went Wrong")
@@ -68,7 +68,7 @@ function Login() {
         formData.append("username",username.value)
         formData.append("password",password.value)
         formData.append("avatar",avatar.file)
-
+        const toastId=toast.loading("Loading...");
         try {
             const {data}=await axios.post(
                 `${server}/user/new`,
@@ -76,11 +76,12 @@ function Login() {
                 config
             )
 
-            dispatch(userExists(true))
+            dispatch(userExists(data?.data))
             toast.success(data.message)
         } catch (error) {
             toast.error(error?.response?.data?.message||"Something Went Wrong")
         }
+        toast.dismiss(toastId);
     }
 
   return (

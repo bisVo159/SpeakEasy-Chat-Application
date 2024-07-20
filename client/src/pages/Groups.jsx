@@ -126,7 +126,7 @@ function Groups() {
   return (
     <div className='h-screen grid grid-cols-12'>
       <div 
-      className='hidden sm:block sm:col-span-4 bg-[#dcd1d1] overflow-auto'
+      className='hidden sm:block sm:col-span-4 bg-[#a5b4fc] overflow-auto'
       >
         <GroupsList myGroups={sampleChats} chatId={chatId}/>
       </div>

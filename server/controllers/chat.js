@@ -1,7 +1,7 @@
 import { TryCatch } from "../middlewares/error.js"
 import { ErrorHandler } from "../utils/utility.js"
 import {Chat} from "../modals/chat.js"
-import { deleteFilesFromCloudinary, emitEvent } from "../utils/features.js"
+import { deleteFilesFromCloudinary, emitEvent, uploadFilesTOCloudinary } from "../utils/features.js"
 import { ALERT, NEW_ATTACHMENT, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/events.js"
 import { getOtherMember } from "../lib/helper.js"
 import {User} from "../modals/user.js"
@@ -176,11 +176,15 @@ const sendAttachments=TryCatch(async(req,res,next)=>{
     if(files.length<1) return next(new ErrorHandler("Please Upload Attachments",400))
     if(files.length>5) return next(new ErrorHandler("Files Can't be more than 5",400))
     
-    const [chat,me]=await Promise.all([Chat.findById(chatId),User.findById(req.user,"name")]);
+    const [chat,me]=await Promise.all([
+        Chat.findById(chatId),
+        User.findById(req.user,"name")
+    ]);
 
+    if(!chat) return next(new ErrorHandler("Could not found",404))
     if(files.length<1) return next(new ErrorHandler("Please provide attachments",400))
         // upload files here
-    const attachments=[];
+    const attachments=await uploadFilesTOCloudinary(files);
 
     const messageForDB={
         content:"",
@@ -314,7 +318,7 @@ const getMessages=TryCatch(async(req,res,next)=>{
 
     return res.status(200).json({
         success:true,
-        message:messages.reverse(),
+        messages:messages.reverse(),
         totalPages
     })
 })

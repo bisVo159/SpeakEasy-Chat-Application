@@ -4,18 +4,19 @@ import { MdAlternateEmail } from "react-icons/md";
 import { MdOutlineFaceUnlock } from "react-icons/md";
 import { SlCalender } from "react-icons/sl";
 import moment from "moment"
+import { transformImage } from '../../lib/features';
 
-function Profile() {
+function Profile({user}) {
   return (
     <div className='flex flex-col gap-y-8 items-center'>
        <img
-        src={profile}
+        src={transformImage(user?.avatar?.url)}
         className='w-[200px] aspect-square object-contain mb-4 border-[5px] border-white rounded-full'
       />
-      <ProfileCard heading={"Bio"} text={"Noob Society"}/>
-      <ProfileCard heading={"Username"} text={"bisVo159"} Icon={<MdAlternateEmail/>}/>
-      <ProfileCard heading={"Name"} text={"Anik Biswas"} Icon={<MdOutlineFaceUnlock/>}/>
-      <ProfileCard heading={"Joined"} text={moment('2024-06-17T00:00:00.000Z').fromNow()} Icon={<SlCalender/>}/>
+      <ProfileCard heading={"Bio"} text={user?.bio}/>
+      <ProfileCard heading={"Username"} text={user?.username} Icon={<MdAlternateEmail/>}/>
+      <ProfileCard heading={"Name"} text={user?.name} Icon={<MdOutlineFaceUnlock/>}/>
+      <ProfileCard heading={"Joined"} text={moment(user?.createdAt).fromNow()} Icon={<SlCalender/>}/>
     </div>
   )
 }

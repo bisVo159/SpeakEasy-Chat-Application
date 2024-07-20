@@ -33,7 +33,7 @@ const miscSlice=createSlice({
         setIsSearch:(state,action)=>{
             state.isSearch=action.payload;
         },
-        setFileMenu:(state,action)=>{
+        setIsFileMenu:(state,action)=>{
             state.isFileMenu=action.payload;
         },
         setDeleteMenu:(state,action)=>{
@@ -42,7 +42,7 @@ const miscSlice=createSlice({
         setSeletedDeleteChat:(state,action)=>{
             state.seletedDeleteChat=action.payload;
         },
-        setUploadLoader:(state,action)=>{
+        setUploadingLoader:(state,action)=>{
             state.uploadingLoader=action.payload;
         },
     }
@@ -55,8 +55,8 @@ export const {
     setNotification,
     setIsMobile,
     setIsSearch,
-    setFileMenu,
+    setIsFileMenu,
     setDeleteMenu,
     setSeletedDeleteChat,
-    setUploadLoader
+    setUploadingLoader
 }=miscSlice.actions
