@@ -4,7 +4,7 @@ import { useErrors } from '../../hooks/hook'
 import useOnClickOutside from '../../hooks/useOnClickOutside'
 import { useDispatch } from 'react-redux'
 import { setNotification } from '../../redux/reducer/misc'
-import Loaders from '../layout/Loaders'
+import {LayOutLoader} from '../layout/Loaders'
 import toast from 'react-hot-toast'
 
 function Notifications() {
@@ -41,7 +41,7 @@ function Notifications() {
         <h1 className='font-bold'>Notifications</h1>
         <ul className='flex flex-col gap-y-3 w-3/4 box-content'>
         {
-        isLoading?<Loaders/>:<>
+        isLoading?<LayOutLoader/>:<>
         {
           data?.allRequests?.length>0?(
             data?.allRequests?.map(({sender,_id})=>

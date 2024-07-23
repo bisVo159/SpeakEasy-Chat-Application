@@ -11,8 +11,9 @@ import {server} from "../constants/config"
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { userNotExists } from '../../redux/reducer/auth';
-import { setIsMobile, setIsSearch, setNotification } from '../../redux/reducer/misc';
-import Loaders from './Loaders';
+import { setIsMobile, setIsNewGroup, setIsSearch, setNotification } from '../../redux/reducer/misc';
+import {LayOutLoader} from './Loaders';
+import { resetNotification } from '../../redux/reducer/chat';
 
 const SearchDialog= lazy(()=>import('../specific/SearchDialog')) ;
 const Notifications= lazy(()=>import('../specific/Notifications')) ;
@@ -21,18 +22,21 @@ const NewGroup= lazy(()=>import('../specific/NewGroup')) ;
 function Header() {
     const navigate=useNavigate()
     const dispatch=useDispatch()
-    const {isSearch}=useSelector(state=>state.misc)
-    const {isNotification}=useSelector(state=>state.misc)
-    const [isNewGroup,setIsNewGroup]=useState(false)
+    const {isSearch,isNotification}=useSelector(state=>state.misc)
+    const {notificationsCount}=useSelector(state=>state.chat)
+    const {isNewGroup}=useSelector(state=>state.misc)
 
     const handleMobile=()=>dispatch(setIsMobile(true))
     
     const openSearch=()=>dispatch(setIsSearch(true))
     
     const openNewGroup=()=>{
-        setIsNewGroup(prev=>!prev)
+        dispatch(setIsNewGroup(true))
     }
-    const openNotification=()=>dispatch(setNotification(true))
+    const openNotification=()=>{
+        dispatch(setNotification(true))
+        dispatch(resetNotification())
+    }
     const navigateToGroup=()=>navigate("/groups")
 
     const logOutHandler=async()=>{
@@ -62,7 +66,7 @@ function Header() {
                 <IconBtn icon={<CiSearch size={26}/>} title={"Search"} onclick={openSearch}/>
                 <IconBtn icon={<IoAddOutline size={26}/>} title={"Add Group"} onclick={openNewGroup}/>
                 <IconBtn icon={<MdGroups2 size={26}/>} title={"Manage Groups"} onclick={navigateToGroup}/>
-                <IconBtn icon={<IoIosNotifications size={26}/>} title={"Notifications"} onclick={openNotification}/>
+                <IconBtn icon={<IoIosNotifications size={26}/>} title={"Notifications"} onclick={openNotification} value={notificationsCount}/>
                 <IconBtn icon={<MdOutlineLogout size={26}/>} title={"Logout"} onclick={logOutHandler}/>
             </div>
         </div>
@@ -91,15 +95,24 @@ function Header() {
   )
 }
 
-const IconBtn=({title,icon,onclick})=>{
+const IconBtn=({title,icon,onclick,value})=>{
     return(
         <button
-        className='text-white relative group'
+        className='text-white relative group flex flex-col items-center '
         onClick={onclick}
         >
-            {icon}
-            <div className='absolute hidden group-hover:block bg-black opacity-5
-             text-white  h-fit px-1 text-xs top-12'>{title}</div>
+            <div className="relative">
+                {icon}
+                {value>0 && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold leading-none
+                 text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full animate-bounce">
+                    {value}
+                </span>
+                )}
+            </div>
+            <div className='absolute hidden group-hover:block bg-neutral-600
+             text-white  p-1 text-xs top-8  rounded-sm transition delay-150 duration-300 ease-in-out text-nowrap'>
+            {title}</div>
         </button>
     )
 }

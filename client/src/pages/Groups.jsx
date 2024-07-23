@@ -4,27 +4,68 @@ import {Link, useNavigate, useSearchParams} from 'react-router-dom'
 import { IoMdMenu } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
 import profile from "../assets/profile.png"
-import { sampleChats, sampleUsers } from '../components/constants/sampleData';
 import { MdEdit } from "react-icons/md";
 import { MdDone } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
 import { MdDelete } from "react-icons/md";
 import UserItem from '../components/shared/UserItem';
+import { useDeleteChatMutation, useGetChatDetailsQuery, useMyGroupsQuery, useRemoveGroupMemberMutation, useRenameGroupMutation } from '../redux/api/api';
+import { useAsyncMutation, useErrors } from '../hooks/hook';
+import { LayOutLoader, Spinner } from '../components/layout/Loaders';
+import { useDispatch, useSelector } from 'react-redux';
+import { setIsAddMember } from '../redux/reducer/misc';
 const ConfirmDeleteDialog=lazy(()=>import('../components/dialogs/ConfirmDeleteDialog'));
 const AddMemberDialog=lazy(()=>import('../components/dialogs/AddMemberDialog'));
 
-const isAddMember=false;
-
 function Groups() {
   const navigate=useNavigate()
+  const dispatch=useDispatch()
   const chatId=useSearchParams()[0].get('group')
-  console.log(chatId)
+  const {isAddMember}=useSelector(state=>state.misc)
+
+  const myGroups=useMyGroupsQuery()
+  const groupDetails=useGetChatDetailsQuery({chatId,populate:true},{skip:!chatId})
+
+  const [renameGroup,isLoadingGroupName]=useAsyncMutation(useRenameGroupMutation)
+  const [removeMember,isLoadingRemoveMember]=useAsyncMutation(useRemoveGroupMemberMutation)
+  const [deleteGroup,isLoadingDeleteGroup]=useAsyncMutation(useDeleteChatMutation)
 
   const [isMobileMenuOpen,setIsMobileMenuOpen]=useState(false)
   const [isEdit,setIsEdit]=useState(false)
   const [groupName,setGroupName]=useState("")
   const [groupNameUpdatedValue,setGroupNameUpdatedValue]=useState("")
   const [confirmDeleteDialog,setConfirmDeleteDialog]=useState(false)
+
+  const [members,setMembers]=useState([])
+
+  const errors=[
+    {
+    isError:myGroups.isError,
+    error:myGroups.error
+  },
+    {
+    isError:groupDetails.isError,
+    error:groupDetails.error
+  },
+]
+  useErrors(errors)
+
+  useEffect(()=>{
+    const groupData=groupDetails.data
+    if(groupDetails.data){
+      setGroupName(groupData.chat.name)
+      setGroupNameUpdatedValue(groupData.chat.name)
+      setMembers(groupData.chat?.members)
+    }
+
+    return ()=>{
+      setGroupName("")
+      setGroupNameUpdatedValue("")
+      setMembers([])
+      setIsEdit(false)
+    }
+  },[groupDetails.data])
+  console.log(groupDetails.data)
 
   const navigateBack=()=>{
     navigate('/')
@@ -44,27 +85,18 @@ function Groups() {
     setConfirmDeleteDialog(false)
   }
   const openAddMemberHandler=()=>{
-    
+    dispatch(setIsAddMember(true))
   }
   const deleteHandler=()=>{
-    console.log("Delete Handler")
+    deleteGroup("Deleting Group...",chatId)
     closeConfirmDeleteHandler();
+    navigate("/groups")
   }
 
-  const remmoveMemberHandler=(id)=>{
-    console.log("Remove Member Handler",id)
+  const remmoveMemberHandler=(userId)=>{
+    removeMember("Removing Members...",{chatId,userId})
   }
 
-  useEffect(()=>{
-    setGroupName(`Group Name ${chatId}`)
-    setGroupNameUpdatedValue(`Group Name ${chatId}`)
-
-    return ()=>{
-      setGroupName("")
-      setGroupNameUpdatedValue("")
-      setIsEdit(false)
-    }
-  },[chatId])
 
   const IconBtns=(
     <>
@@ -84,7 +116,7 @@ function Groups() {
 
   const updateGroupName=()=>{
     setIsEdit(false)
-    console.log(groupNameUpdatedValue)
+    renameGroup("Updating Group Name...",{chatId,name:groupNameUpdatedValue})
   }
 
   const GroupName=<div className='flex items-center justify-center p-12 gap-4'>
@@ -95,13 +127,16 @@ function Groups() {
       onChange={(e)=>setGroupNameUpdatedValue(e.target.value)}
       className='border-2 p-2'
       />
-      <button onClick={updateGroupName}>
+      <button
+       onClick={updateGroupName}>
         <MdDone/>
       </button>
       </>
       :<>
       <h1>{groupName}</h1>
-      <button onClick={()=>setIsEdit(true)}>
+      <button 
+      disabled={isLoadingGroupName}
+      onClick={()=>setIsEdit(true)}>
       <MdEdit/>
       </button>
       </>
@@ -123,12 +158,12 @@ function Groups() {
     Add Member</button>
   </div>
 
-  return (
+  return  (myGroups.isLoading)?<LayOutLoader/>:(
     <div className='h-screen grid grid-cols-12'>
       <div 
       className='hidden sm:block sm:col-span-4 bg-[#a5b4fc] overflow-auto'
       >
-        <GroupsList myGroups={sampleChats} chatId={chatId}/>
+        <GroupsList myGroups={myGroups?.data?.groups} chatId={chatId}/>
       </div>
 
       <div 
@@ -136,14 +171,14 @@ function Groups() {
       >
         {IconBtns}
 
-        {GroupName&&<>
+        {GroupName&&chatId&&<>
         {GroupName}
         <p className='m-8 self-start font-semibold'>Members</p>
         <div
-        className='w-full box-border sm:p-4  space-y-8 h-[50vh] overflow-auto flex flex-col items-center '
+        className='w-full box-border sm:p-4  space-y-8 h-[50vh] overflow-auto flex flex-col items-center custom-scrollbar'
         >
-          {
-            sampleUsers.map(i=>(
+          {(groupDetails.isLoading||isLoadingRemoveMember)?<Spinner/>:
+            members.map(i=>(
               <UserItem user={i}
               key={i._id}
                isAdded={true} 
@@ -159,7 +194,7 @@ function Groups() {
       </div>
 
       {isAddMember&&<Suspense fallback={<div>Loading...</div>}>
-          <AddMemberDialog/>
+          <AddMemberDialog chatId={chatId}/>
         </Suspense>}
 
       {confirmDeleteDialog&&<Suspense fallback={<div>Loading...</div>}>
@@ -176,7 +211,7 @@ function Groups() {
         </button>
 
         <div className='min-h-screen w-fit bg-white'>
-        <GroupsList w={"50%"} myGroups={sampleChats} chatId={chatId}/>
+        <GroupsList w={"50%"} myGroups={myGroups?.data?.groups} chatId={chatId}/>
         </div>
       </div>
     </div>
@@ -204,12 +239,18 @@ const GroupListItem=memo(({group,chatId})=>{
             if(chatId===_id) e.preventDefault()
           }}
           >
-              <div className='flex items-center gap-x-4 p-4 hover:bg-[rgba(0,0,0,0.2)]'>
-                <img
-                src={avatar||profile}
-                alt='group image'
-                className='h-8 aspect-square rounded-full'
-                />
+              <div className='flex items-center gap-x-8 p-4 hover:bg-[rgba(0,0,0,0.2)]'>
+              <div className="relative flex items-center" style={{ width: `${(avatar.slice(0, 4).length - 1) * 1.1 + 1}rem` }}>
+                  {avatar.slice(0, 4).map((item, index) => (
+                    <img
+                      key={index}
+                      src={item || profile}
+                      alt="group image"
+                      style={{ left: `${index * 1.1}rem` }}
+                      className="h-8 aspect-square rounded-full absolute"
+                    />
+                  ))}
+                </div>
                 <p>{name}</p>
               </div>
             </Link>

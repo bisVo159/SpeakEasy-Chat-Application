@@ -178,7 +178,7 @@ const getMyNotifications=TryCatch(async(req,res,next)=>{
 })
 
 const getMyFriends=TryCatch(async(req,res,next)=>{
-    const chatId=req.params.chatId;
+    const chatId=req.query.chatId;
     
     const chats=await Chat.find({
         members:req.user,groupChat:false
@@ -193,7 +193,6 @@ const getMyFriends=TryCatch(async(req,res,next)=>{
             avatar:otherUser.avatar.url
         }
     })
-
     if(chatId){
         const chat=await Chat.findById(chatId);
 

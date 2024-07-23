@@ -2,7 +2,7 @@ import { TryCatch } from "../middlewares/error.js"
 import { ErrorHandler } from "../utils/utility.js"
 import {Chat} from "../modals/chat.js"
 import { deleteFilesFromCloudinary, emitEvent, uploadFilesTOCloudinary } from "../utils/features.js"
-import { ALERT, NEW_ATTACHMENT, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/events.js"
+import { ALERT, NEW_ATTACHMENT, NEW_MESSAGE, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/events.js"
 import { getOtherMember } from "../lib/helper.js"
 import {User} from "../modals/user.js"
 import { Message } from "../modals/message.js"
@@ -123,12 +123,15 @@ const removeMember=TryCatch(async (req,res,next)=>{
     if(chat.members.length<=3)
         return next(new ErrorHandler("Group must have at least 3 members",400));
 
+    const allChatMembers=chat.members.filter(member=>member.toString())
     chat.members=chat.members.filter(member=>member.toString()!==userId.toString())
 
     await chat.save();
 
     emitEvent(req,ALERT,chat.members,
         `${userThatWillBeRemoved.name} has been removed from ${chat.name} group`)
+    
+    emitEvent(req,REFETCH_CHATS,allChatMembers)
 
     return res.status(200).json({
         success:true,
@@ -202,7 +205,7 @@ const sendAttachments=TryCatch(async(req,res,next)=>{
     };
     const message=await Message.create(messageForDB)
 
-    emitEvent(req,NEW_ATTACHMENT,chat.members,{
+    emitEvent(req,NEW_MESSAGE,chat.members,{
         message:messageForRealTime,
         chatId
     })
@@ -303,6 +306,14 @@ const getMessages=TryCatch(async(req,res,next)=>{
     const {page=1}=req.query;
     const resultPerPage=20;
     const skip=(page-1)*resultPerPage;
+
+    const chat=await Chat.findById(chatId)
+
+    if(!chat) return next(new ErrorHandler("Chat not found",404))
+
+    if(!chat.members.includes(req.user.toString())){
+        return next(new ErrorHandler("You are not allowed to access this group",403))
+    }
     
     const [messages,totalMessagesCount]=await Promise.all([
         Message.find({chat:chatId})

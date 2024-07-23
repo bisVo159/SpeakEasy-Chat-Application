@@ -6,17 +6,22 @@ import FileMenu from '../components/dialogs/FileMenu';
 import { sampleMessage } from '../components/constants/sampleData';
 import MessageComponent from '../components/shared/MessageComponent';
 import { getSocket } from '../socket';
-import { NEW_MESSAGE } from '../components/constants/events';
+import { ALERT, NEW_MESSAGE, START_TYPING, STOP_TYPING } from '../components/constants/events';
 import { useGetChatDetailsQuery, useGetMessegesQuery } from '../redux/api/api';
-import Loaders from '../components/layout/Loaders';
+import { TypingLoader,LayOutLoader } from '../components/layout/Loaders';
 import { useErrors, useSocketEvents } from '../hooks/hook';
 import { useInfiniteScrollTop } from '6pp'
 import { useDispatch } from 'react-redux';
 import { setIsFileMenu } from '../redux/reducer/misc';
+import { removeNewMessagesAlert } from '../redux/reducer/chat';
+import { useNavigate } from 'react-router-dom';
 
 function Chat({chatId,user}) {
   const containerRef=useRef(null)
+  const bottomRef=useRef(null)
+
   const dispatch=useDispatch()
+  const navigate=useNavigate()
 
   const socket=getSocket()
 
@@ -24,6 +29,10 @@ function Chat({chatId,user}) {
   const [messages,setMessages]=useState([])
   const [page,setPage]=useState(1)
   const [fileMenuAnchor,setFileMenuAnchor]=useState(null)
+
+  const [IamTyping,SetIamTyping]=useState(false)
+  const [userTyping,SetUserTyping]=useState(false)
+  const typingTimeOut=useRef(null)
 
   const chatDetails=useGetChatDetailsQuery({chatId,skip:!chatId})
   const oldMessagesChunk=useGetMessegesQuery({chatId,page})
@@ -45,6 +54,22 @@ function Chat({chatId,user}) {
 
   const members=chatDetails?.data?.chat?.members;
 
+  const messageOnChage=(e)=>{
+    setMessage(e.target.value)
+    if(!IamTyping){
+      socket.emit(START_TYPING,{members,chatId})
+      SetIamTyping(true)
+    }
+    
+    if(typingTimeOut.current){
+      clearTimeout(typingTimeOut.current)
+    }
+    typingTimeOut.current=setTimeout(() => {
+      socket.emit(STOP_TYPING,{members,chatId})
+      SetIamTyping(false)
+    }, 2000);
+  }
+
   const handleFileOpen=(e)=>{
       dispatch(setIsFileMenu(true))
       setFileMenuAnchor(e.currentTarget)
@@ -57,14 +82,65 @@ function Chat({chatId,user}) {
     // Emiting message to server
     socket.emit(NEW_MESSAGE,{chatId,members,message})
     setMessage("")
+    dispatch(setIsFileMenu(false))
   }
 
-  const newMessagesHandler=useCallback((data)=>{
-    console.log("data",data)
-    setMessages(prev=>[...prev,data.message])
-  },[])
+  useEffect(()=>{
+    dispatch(removeNewMessagesAlert(chatId))
+    // to avoid on first render
+    return ()=>{
+      setMessage("")
+      setMessages([])
+      setPage(1)
+      setOldMessages([])
+    }
+  },[chatId])
 
-  const eventHandler={[NEW_MESSAGE]:newMessagesHandler}
+  useEffect(()=>{
+    if(bottomRef.current) bottomRef.current.scrollIntoView({behavior:"smooth"})
+  },[messages])
+
+  useEffect(()=>{
+    if(!chatDetails.data?.chat) return navigate('/')
+  },[chatDetails.data])
+
+  const newMessagesHandler=useCallback((data)=>{
+    if(data.chatId!==chatId) return;
+    
+    setMessages(prev=>[...prev,data.message])
+  },[chatId])
+
+  const startTypingListener=useCallback((data)=>{
+    if(data.chatId!==chatId) return;
+    
+    SetUserTyping(true);
+  },[chatId])
+
+  const stopTypingListener=useCallback((data)=>{    
+    SetUserTyping(false)
+  },[chatId])
+
+
+  const alertListner=useCallback((content)=>{    
+    const messageForAlert={
+      content,
+      sender:{
+          _id:"adminId",
+          name:"Admin"
+      },
+      chat:chatId,
+      createdAt:new Date().toISOString()
+  }
+
+  setMessages(prev=>[...prev,messageForAlert])
+  },[chatId])
+
+  const eventHandler={
+    [ALERT]:alertListner,
+    [NEW_MESSAGE]:newMessagesHandler,
+    [START_TYPING]:startTypingListener,
+    [STOP_TYPING]:stopTypingListener,
+  }
 
   useSocketEvents(socket,eventHandler)
 
@@ -72,17 +148,23 @@ function Chat({chatId,user}) {
 
   const allMessages=[...oldMessages,...messages]
 
-  return chatDetails.isLoading?<Loaders/>:(
+  return chatDetails.isLoading?<LayOutLoader/>:(
     <>
       <div
       ref={containerRef}
-      className={`box-border p-4 flex flex-col space-y-4 bg-gray-100 h-[90%] overflow-x-hidden custom-scrollbar`}
+      className={`box-border p-4 flex flex-col space-y-4 bg-gray-100 h-[90%] overflow-x-hidden relative custom-scrollbar`}
       >
         {
           allMessages?.map((i)=>(
             <MessageComponent key={i._id} message={i}user={user}/>
           ))
         }
+
+        {
+          userTyping&&<TypingLoader/>
+        }
+
+        <div ref={bottomRef}/>
       </div>
 
       <form
@@ -100,7 +182,7 @@ function Chat({chatId,user}) {
         <input
           placeholder='Type Message Here...'
           value={message}
-          onChange={(e)=>setMessage(e.target.value)}
+          onChange={messageOnChage}
           className='w-full h-full border-none outline-none py-6 px-10 rounded-3xl bg-gray-100'
           />
 

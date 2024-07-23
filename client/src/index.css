@@ -17,4 +17,94 @@
     .custom-scrollbar-dark::-webkit-scrollbar-thumb{
         background-color: #312e81;
     }
+
+    .bounce{
+        animation: bounceAnimation 1s infinite;
+      }
+    
+      @keyframes bounceAnimation {
+          0% {transform: scale(1);}
+          50% {transform: scale(1.5);}
+          100% {transform: scale(1);}
+      }
+
+      .loader {
+        height: 30px;
+        aspect-ratio: 2.5;
+        --_g: no-repeat radial-gradient(farthest-side,#000 90%,#0000);
+        background:var(--_g), var(--_g), var(--_g), var(--_g);
+        background-size: 20% 50%;
+        animation: l43 1s infinite linear; 
+      }
+      @keyframes l43 {
+        0%     {background-position: calc(0*100%/3) 50% ,calc(1*100%/3) 50% ,calc(2*100%/3) 50% ,calc(3*100%/3) 50% }
+        16.67% {background-position: calc(0*100%/3) 0   ,calc(1*100%/3) 50% ,calc(2*100%/3) 50% ,calc(3*100%/3) 50% }
+        33.33% {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 0   ,calc(2*100%/3) 50% ,calc(3*100%/3) 50% }
+        50%    {background-position: calc(0*100%/3) 50% ,calc(1*100%/3) 100%,calc(2*100%/3) 0   ,calc(3*100%/3) 50% }
+        66.67% {background-position: calc(0*100%/3) 50% ,calc(1*100%/3) 50% ,calc(2*100%/3) 100%,calc(3*100%/3) 0   }
+        83.33% {background-position: calc(0*100%/3) 50% ,calc(1*100%/3) 50% ,calc(2*100%/3) 50% ,calc(3*100%/3) 100%}
+        100%   {background-position: calc(0*100%/3) 50% ,calc(1*100%/3) 50% ,calc(2*100%/3) 50% ,calc(3*100%/3) 50% }
+      }
+
+      .spinner {
+        color: #a5b4fc;
+        font-size: 10px;
+        width: 1em;
+        height: 1em;
+        border-radius: 50%;
+        position: relative;
+        text-indent: -9999em;
+        animation: mulShdSpin 1.3s infinite linear;
+        transform: translateZ(0);
+      }
+      
+      @keyframes mulShdSpin {
+        0%,
+        100% {
+          box-shadow: 0 -3em 0 0.2em, 
+          2em -2em 0 0em, 3em 0 0 -1em, 
+          2em 2em 0 -1em, 0 3em 0 -1em, 
+          -2em 2em 0 -1em, -3em 0 0 -1em, 
+          -2em -2em 0 0;
+        }
+        12.5% {
+          box-shadow: 0 -3em 0 0, 2em -2em 0 0.2em, 
+          3em 0 0 0, 2em 2em 0 -1em, 0 3em 0 -1em, 
+          -2em 2em 0 -1em, -3em 0 0 -1em, 
+          -2em -2em 0 -1em;
+        }
+        25% {
+          box-shadow: 0 -3em 0 -0.5em, 
+          2em -2em 0 0, 3em 0 0 0.2em, 
+          2em 2em 0 0, 0 3em 0 -1em, 
+          -2em 2em 0 -1em, -3em 0 0 -1em, 
+          -2em -2em 0 -1em;
+        }
+        37.5% {
+          box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em,
+           3em 0em 0 0, 2em 2em 0 0.2em, 0 3em 0 0em, 
+           -2em 2em 0 -1em, -3em 0em 0 -1em, -2em -2em 0 -1em;
+        }
+        50% {
+          box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em,
+           3em 0 0 -1em, 2em 2em 0 0em, 0 3em 0 0.2em, 
+           -2em 2em 0 0, -3em 0em 0 -1em, -2em -2em 0 -1em;
+        }
+        62.5% {
+          box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em,
+           3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 0, 
+           -2em 2em 0 0.2em, -3em 0 0 0, -2em -2em 0 -1em;
+        }
+        75% {
+          box-shadow: 0em -3em 0 -1em, 2em -2em 0 -1em, 
+          3em 0em 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, 
+          -2em 2em 0 0, -3em 0em 0 0.2em, -2em -2em 0 0;
+        }
+        87.5% {
+          box-shadow: 0em -3em 0 0, 2em -2em 0 -1em, 
+          3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, 
+          -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;
+        }
+      }
+        
 }

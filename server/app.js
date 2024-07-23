@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser"
 import { v4 as uuid } from "uuid"
 import cors from 'cors'
 import {v2 as cloudinary} from "cloudinary"
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/events.js"
+import { NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/events.js"
 import {getSockets} from "./lib/helper.js"
 import { Message } from "./modals/message.js"
 import { corsOptions } from "./constants/config.js"
@@ -41,6 +41,8 @@ cloudinary.config({
 const app=express()
 const server=createServer(app)
 const io=new Server(server,{cors:corsOptions})
+
+app.set("io",io)
 
 // to access all api usig middleware
 app.use(express.json())
@@ -90,7 +92,7 @@ io.on("connection",(socket)=>{
             chat:chatId,
         }
 
-        console.log("Emitting Message for real time ",messageForRealTIme)
+        // console.log("Emitting Message for real time ",messageForRealTIme)
         const memberSocket=getSockets(members)
         io.to(memberSocket).emit(NEW_MESSAGE,{
             chatId,message:messageForRealTIme
@@ -102,6 +104,15 @@ io.on("connection",(socket)=>{
         } catch (error) {
             console.log(error)
         }
+    })
+
+    socket.on(START_TYPING,({members,chatId})=>{
+        const memberSocket=getSockets(members)
+        socket.to(memberSocket).emit(START_TYPING,{chatId})
+    })
+    socket.on(STOP_TYPING,({members,chatId})=>{
+        const memberSocket=getSockets(members)
+        socket.to(memberSocket).emit(STOP_TYPING,{chatId})
     })
     
     socket.on("disconnect",()=>{

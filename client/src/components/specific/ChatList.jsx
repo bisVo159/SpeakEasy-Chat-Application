@@ -12,13 +12,11 @@ export default function ChatList({
     }],
     handleDeleteChat
 }) {
-    console.log("chatId2",chatId)
   return (
     <div className='overflow-auto h-screen'>
         {
             chats.map((data, index)=>{
               const {avatar,_id,name,groupChat,members}=data
-              console.log(chatId,_id,chatId===_id)
 
               const newMessageAlert=newMessagesAlert.find(({chatId})=>chatId===_id)
               const isOnline=members?.some((member)=>onlineUsers.includes(member))
