@@ -11,13 +11,20 @@ const newGroupChat=TryCatch(async (req,res,next)=>{
     const {name,members}=req.body
 
     const allMembers=[...members,req.user];
-    await Chat.create({
+    const chat=await Chat.create({
         name,groupChat:true,
         creator:req.user,
         members:allMembers
     })
 
-    emitEvent(req,ALERT,allMembers,`Welcome to ${name} group`)
+    emitEvent(req,
+        ALERT,
+        allMembers,
+        {
+            message:`Welcome to ${name} group`,
+            chatId:chat._id
+        }
+    )
     emitEvent(req,REFETCH_CHATS,members,`Welcome to ${name} group`)
 
     return res.status(201).json({
@@ -99,7 +106,14 @@ const addMembers=TryCatch(async (req,res,next)=>{
     await chat .save();
 
     const allUsersName=allNewMembers.map(i=>i.name).join(", ")
-    emitEvent(req,ALERT,chat.members,`${allUsersName} has been added to ${chat.name} group`)
+    emitEvent(req,
+        ALERT,
+        chat.members,
+        {
+            message:`${allUsersName} has been added to ${chat.name} group`,
+            chatId
+        }
+    )
     emitEvent(req,REFETCH_CHATS,chat.members)
 
     return res.status(200).json({
@@ -128,8 +142,14 @@ const removeMember=TryCatch(async (req,res,next)=>{
 
     await chat.save();
 
-    emitEvent(req,ALERT,chat.members,
-        `${userThatWillBeRemoved.name} has been removed from ${chat.name} group`)
+    emitEvent(req,
+        ALERT,
+        chat.members,
+        {
+            message:`${userThatWillBeRemoved.name} has been removed from ${chat.name} group`,
+            chatId
+        }
+        )
     
     emitEvent(req,REFETCH_CHATS,allChatMembers)
 
@@ -163,8 +183,14 @@ const leaveGroup=TryCatch(async (req,res,next)=>{
     const [user]=await Promise.all([User.findById(req.user,"name")])
     await chat.save();
 
-    emitEvent(req,ALERT,chat.members,
-        `${user.name} has left ${chat.name} group`)
+    emitEvent(req,
+        ALERT,
+        chat.members,
+        {
+            message:`${user.name} has left the group ${chat.name}`,
+            chatId
+        }
+        )
 
     return res.status(200).json({
         success:true,

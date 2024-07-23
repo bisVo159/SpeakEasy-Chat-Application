@@ -1,6 +1,6 @@
 import React, { memo, useRef } from 'react'
 import { useAcceptFriendRequestMutation, useGetNotificationsQuery } from '../../redux/api/api'
-import { useErrors } from '../../hooks/hook'
+import { useAsyncMutation, useErrors } from '../../hooks/hook'
 import useOnClickOutside from '../../hooks/useOnClickOutside'
 import { useDispatch } from 'react-redux'
 import { setNotification } from '../../redux/reducer/misc'
@@ -15,22 +15,11 @@ function Notifications() {
   const {isLoading,data,error,isError}=useGetNotificationsQuery()
   useErrors([{error,isError}])
 
-  const [acceptRequest]=useAcceptFriendRequestMutation();
+  const [acceptRequest]=useAsyncMutation(useAcceptFriendRequestMutation);
 
   const friendRequestHandler=async({_id,accept})=>{
     dispath(setNotification(false))
-    try {
-      const res=await acceptRequest({requestId:_id,accept})
-      if(res.data?.success){
-        console.log("Use Socket Here");
-        toast.success(res.data.message)
-      }else{
-        toast.error(res.data?.error||"Something Went Wrong")
-      }
-    } catch (error) {
-      console.log(error)
-      toast.error(error.message||"Something Went Wrong")
-    }
+    acceptRequest("Accepting ...",{requestId:_id,accept})
   }
   
   return (

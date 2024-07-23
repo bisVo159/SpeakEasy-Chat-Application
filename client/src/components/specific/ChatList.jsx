@@ -13,7 +13,7 @@ export default function ChatList({
     handleDeleteChat
 }) {
   return (
-    <div className='overflow-auto h-screen'>
+    <div className='overflow-auto h-screen custom-scrollbar'>
         {
             chats.map((data, index)=>{
               const {avatar,_id,name,groupChat,members}=data

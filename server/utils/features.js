@@ -26,7 +26,7 @@ const sendToken=(res,user,code,message)=>{
     return res.status(code).cookie("speakEasy-token",token,cookieOptions).json({
         success:true,
         message,
-        data:user
+        user
     })
 }
 

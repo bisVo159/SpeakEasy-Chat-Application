@@ -101,8 +101,8 @@ function Chat({chatId,user}) {
   },[messages])
 
   useEffect(()=>{
-    if(!chatDetails.data?.chat) return navigate('/')
-  },[chatDetails.data])
+    if(chatDetails.isError) return navigate('/')
+  },[chatDetails.isError])
 
   const newMessagesHandler=useCallback((data)=>{
     if(data.chatId!==chatId) return;
@@ -121,14 +121,16 @@ function Chat({chatId,user}) {
   },[chatId])
 
 
-  const alertListner=useCallback((content)=>{    
+  const alertListner=useCallback((data)=>{    
+    if(data.chatId!==chatId) return;
+
     const messageForAlert={
-      content,
+      content:data.message,
       sender:{
           _id:"adminId",
           name:"Admin"
       },
-      chat:chatId,
+      chat:data.chatId,
       createdAt:new Date().toISOString()
   }
 

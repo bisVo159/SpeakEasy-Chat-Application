@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 
 function Login() {
     const [isLogin,setIsLogin]=useState(true)
+    const [isLoading,setIsLoading]=useState(false)
     const fileInputRef = useRef(null)
 
     const toggleLogin=()=>{
@@ -28,6 +29,8 @@ function Login() {
     const handleLogin=async(e)=>{
         e.preventDefault()
 
+        setIsLoading(true)
+        const toastId=toast.loading("Logging In...")
         const config={
             withCredentials:true,
             headers:{
@@ -45,10 +48,16 @@ function Login() {
                 config
             )
 
-            dispatch(userExists(data?.data))
-            toast.success(data.message)
+            dispatch(userExists(data?.user))
+            toast.success(data.message,{
+                id:toastId
+            })
         } catch (error) {
-            toast.error(error?.response?.data?.message||"Something Went Wrong")
+            toast.error(error?.response?.data?.message||"Something Went Wrong",{
+                id:toastId
+            })
+        }finally{
+            setIsLoading(false)
         }
     }
     
@@ -61,14 +70,14 @@ function Login() {
                 "Content-Type":"multipart/form-data"
             }
         }
-
+        setIsLoading(true)
         const formData=new FormData()
         formData.append("name",name.value)
         formData.append("bio",bio.value)
         formData.append("username",username.value)
         formData.append("password",password.value)
         formData.append("avatar",avatar.file)
-        const toastId=toast.loading("Loading...");
+        const toastId=toast.loading("Signing Up...");
         try {
             const {data}=await axios.post(
                 `${server}/user/new`,
@@ -76,12 +85,17 @@ function Login() {
                 config
             )
 
-            dispatch(userExists(data?.data))
-            toast.success(data.message)
+            dispatch(userExists(data?.user))
+            toast.success(data.message,{
+                id:toastId
+            })
         } catch (error) {
-            toast.error(error?.response?.data?.message||"Something Went Wrong")
+            toast.error(error?.response?.data?.message||"Something Went Wrong",{
+                id:toastId
+            })
+        }finally{
+            setIsLoading(false)
         }
-        toast.dismiss(toastId);
     }
 
   return (
@@ -125,11 +139,13 @@ function Login() {
                         <button
                         type='submit'
                         className='w-full font-semibold py-2 text-white bg-blue-900'
-                        >LOGIN</button>
+                        disabled={isLoading}
+                        >LogIn</button>
                         <p className='text-center m-4'>OR</p>
                         <button
                         className='mt-[1rem] w-full'
                         onClick={toggleLogin}
+                        disabled={isLoading}
                         >Sign Up Instead</button>
                     </form>
                     </>)
@@ -161,6 +177,7 @@ function Login() {
                                     accept="image/png, image/gif, image/jpeg"
                                     onChange={avatar.changeHandler}
                                     className='overflow-hidden p-0 h-1 m-[-1] absolute whitespace-nowrap w-1'
+                                    disabled={isLoading}
                                     />
                                 </button>
                             </div>
@@ -225,11 +242,13 @@ function Login() {
                             <button
                             type='submit'
                             className='w-full font-semibold py-2 text-white bg-blue-900'
-                            >SIGN UP</button>
+                            disabled={isLoading}
+                            >Sign Up</button>
                             <p className='text-center m-4'>OR</p>
                             <button
                             className='mt-[1rem] w-full'
                             onClick={toggleLogin}
+                            disabled={isLoading}
                             >Login Instead</button>
                         </form>
                         </>

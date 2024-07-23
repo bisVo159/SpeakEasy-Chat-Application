@@ -9,6 +9,7 @@ SpeakEasy Chat Application
 6. npm i axios
 7. npm install @reduxjs/toolkit
 8. npm install react-redux
+9. npm i framer-motion
 
 <!-- Backend -->
 1. npm init -y

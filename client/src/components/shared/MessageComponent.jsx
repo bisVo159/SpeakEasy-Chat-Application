@@ -2,6 +2,7 @@ import moment from 'moment'
 import React, { memo } from 'react'
 import { fileFormat } from '../../lib/features'
 import RenderAttachment from './RenderAttachment'
+import {motion} from "framer-motion"
 
 function MessageComponent({message,user}) {
     const {sender,content,attachments=[],createdAt}=message
@@ -10,7 +11,10 @@ function MessageComponent({message,user}) {
 
     const timeAgo=moment(createdAt).fromNow()
   return (
-    <div className={`w-fit ${sameSender?'self-end':'self-start'} text-black bg-white rounded-[5px]  p-2`}>
+    <motion.div
+    initial={{ opacity: 0, x: "-100%" }}
+    whileInView={{ opacity: 1, x: 0 }}
+    className={`w-fit ${sameSender?'self-end':'self-start'} text-black bg-white rounded-[5px]  p-2`}>
         {
             !sameSender&&(
                 <p className='text-[#2694ab] font-[600] text-xs'>{sender.name}</p>
@@ -40,7 +44,7 @@ function MessageComponent({message,user}) {
             )
         }
         <p className='text-[#2694ab] font-[400] text-xs'>{timeAgo}</p>
-    </div>
+    </motion.div>
   )
 }
 

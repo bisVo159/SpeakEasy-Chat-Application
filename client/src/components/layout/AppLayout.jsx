@@ -7,13 +7,14 @@ import Profile from './Profile'
 import { useMyChatQuery } from '../../redux/api/api'
 import {LayOutLoader} from './Loaders'
 import { useDispatch, useSelector } from 'react-redux'
-import { setIsDeleteMenu, setIsMobile } from '../../redux/reducer/misc'
+import { setIsDeleteMenu, setIsMobile, setSeletedDeleteChat } from '../../redux/reducer/misc'
 import useOnClickOutside from '../../hooks/useOnClickOutside'
 import { useErrors, useSocketEvents } from '../../hooks/hook'
 import { getSocket } from '../../socket'
 import { NEW_MESSAGE_ALERT, NEW_REQUEST, REFETCH_CHATS } from '../constants/events'
 import { incrementNotification, setNewMessagesAlert } from '../../redux/reducer/chat'
 import { getOrSaveFromStorage } from '../../lib/features'
+import DeleteChatMenu from '../dialogs/DeleteChatMenu'
 
 const AppLayout=()=>WrappedComponent=> {
   return (props)=>{
@@ -22,21 +23,26 @@ const AppLayout=()=>WrappedComponent=> {
     const navigate=useNavigate()
     const ref=useRef()
     const chatId=params.chatId;
+    const deleteMenuAnchor=useRef(null)
 
     const socket=getSocket();
 
     const {isMobile}=useSelector(state=>state.misc)
     const {user}=useSelector(state=>state.auth)
     const {newMessagesAlert}=useSelector(state=>state.chat)
+    const {isDeleteMenu}=useSelector(state=>state.misc)
     
     const {isLoading,data,isError,error,refetch}=useMyChatQuery("")
 
     useErrors([{isError,error}]);
 
-    const handleDeleteChat=(e,_id,groupChat)=>{
-      e.preventDefault(setIsDeleteMenu(true));
-      dispatch(setIsDe)
-      console.log("Delete chat",_id,groupChat)
+    const handleDeleteChat=(e,chatId,groupChat)=>{
+      e.preventDefault();
+      dispatch(setSeletedDeleteChat({
+        chatId,groupChat
+      }))
+      dispatch(setIsDeleteMenu(true))
+      deleteMenuAnchor.current=e.currentTarget
     }
 
     useEffect(()=>{
@@ -72,6 +78,7 @@ const AppLayout=()=>WrappedComponent=> {
         <>
           <Title/>
           <Header/>
+          {isDeleteMenu&&<DeleteChatMenu dispatch={dispatch} deleteMenuAnchor={deleteMenuAnchor}/>}
 
           {
             isLoading?<LayOutLoader/>:

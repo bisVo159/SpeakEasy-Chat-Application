@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 import AvatarCard from './AvatarCard'
+import {motion} from "framer-motion"
 
 function ChatItem({
   avatar=[],
@@ -18,14 +19,18 @@ function ChatItem({
     to={`/chat/${_id}`}
     onContextMenu={(e)=>handleDeleteChat(e,_id,groupChat)}
     className='text-black'>
-    <div className={`flex items-center justify-between p-4 hover:bg-[rgba(0,0,0,0.1)] ${sameSender ? 'bg-black text-white' : 'unset text-black'} gap-4`}>        
+    <motion.div 
+    initial={{opacity:0,y:"-100%"}}
+    whileInView={{opacity:1,y:0}}
+    transition={{delay:index*0.1}}
+    className={`flex items-center justify-between p-4 hover:bg-[rgba(0,0,0,0.1)] ${sameSender ? 'bg-black text-white' : 'unset text-black'} gap-4`}>        
       {/* Avatar Card */}
       <div 
       className='flex gap-3 items-center w-fit p-3' 
       >
         <AvatarCard avatar={avatar} />
 
-        <div className='flex flex-col items-center '>
+        <div className='flex flex-col items-center justify-center'>
           <h1>{name}</h1>
           {
             newMessageAlert && (
@@ -41,7 +46,7 @@ function ChatItem({
           </div>
         )
       }
-    </div>
+    </motion.div>
 
   </Link>
   )
