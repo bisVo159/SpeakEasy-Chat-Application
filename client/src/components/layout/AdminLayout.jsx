@@ -8,6 +8,8 @@ import { MdManageAccounts } from "react-icons/md";
 import { MdGroups } from "react-icons/md";
 import { MdMessage } from "react-icons/md";
 import { TbLogout } from "react-icons/tb";
+import { useDispatch, useSelector } from 'react-redux';
+import { adminLogout } from '../../redux/thunks/admin';
 
 const adminTab=[
     {
@@ -34,9 +36,10 @@ const adminTab=[
 
 const Sidebar=({w="100%"})=>{
     const location=useLocation()
+    const dispatch=useDispatch();
 
     const logoutHandler=()=>{
-        console.log("logout")
+        dispatch(adminLogout())
     }
 
     return (
@@ -52,10 +55,12 @@ const Sidebar=({w="100%"})=>{
                             </Link>
                         ))
                     }
-                    <Link className='flex gap-3 px-8 py-4 text-black rounded-[8rem] items-center hover:bg-[rgba(0,0,0,0.54)] hover:text-gray-200 font-[1.2rem]'>
+                    <button 
+                    onClick={logoutHandler}
+                    className='flex gap-3 px-8 py-4 text-black rounded-[8rem] items-center hover:bg-[rgba(0,0,0,0.54)] hover:text-gray-200 font-[1.2rem]'>
                         <TbLogout size={30}/>
                         <p>LogOut</p>
-                    </Link>
+                    </button>
                 </div>
         </div>
     )
@@ -63,7 +68,7 @@ const Sidebar=({w="100%"})=>{
 
 function AdminLayout({children}) {
     const [isMobile,setIsMobile]=useState(false)
-    const isAdmin=true;
+    const {isAdmin}=useSelector(state=>state.auth)
     const ref=useRef();
     useOnClickOutside(ref,()=>setIsMobile(false))
     
@@ -71,7 +76,7 @@ function AdminLayout({children}) {
         setIsMobile(!isMobile)
     }
 
-    if(!isAdmin) return <Navigate path='/admin'/>
+    if(!isAdmin) return <Navigate to="/admin"/>
 
   return (
     <div className='grid min-h-screen grid-cols-12'>

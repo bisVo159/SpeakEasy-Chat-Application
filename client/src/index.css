@@ -18,6 +18,10 @@
         background-color: #312e81;
     }
 
+    .custom-scrollbar2::-webkit-scrollbar{
+      width: 0px;
+  }
+
     .bounce{
         animation: bounceAnimation 1s infinite;
       }

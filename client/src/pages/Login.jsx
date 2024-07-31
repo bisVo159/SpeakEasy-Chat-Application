@@ -100,7 +100,7 @@ function Login() {
 
   return (
     <div className='flex items-center mx-auto h-screen justify-center w-screen
-    bg-gradient-to-r from-blue-200 to-cyan-200'>
+    bg-gradient-to-r from-[#a5b4fc] to-[#13151f9a]'>
             <div className='shadow-xl p-6 flex flex-col justify-center items-center max-w-xs'>
                 {
                     isLogin?(

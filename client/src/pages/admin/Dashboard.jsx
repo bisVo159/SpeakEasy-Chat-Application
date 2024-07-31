@@ -7,8 +7,23 @@ import { MdGroups } from "react-icons/md";
 import { IoPerson } from "react-icons/io5";
 import { MdMessage } from "react-icons/md";
 import {LineChart,DoughnutChart} from "../../components/specific/Charts"
+import { useFetchData } from '6pp';
+import { server } from '../../components/constants/config';
+import {  Spinner } from '../../components/layout/Loaders';
+import { useErrors } from '../../hooks/hook';
 
 function Dashboard() {
+
+  const {loading,data,error}=useFetchData(`${server}/admin/stats`,"dashboard-stats")
+
+  const {stats}=data||{};
+
+  useErrors([{
+    isError:error,
+    error:error
+  }
+  ])
+  
   const Appbar=<div className='p-8 my-8 rounded-2xl shadow-2xl'>
     <div className='flex items-center gap-4'>
       <MdAdminPanelSettings size={60}/>
@@ -28,24 +43,28 @@ function Dashboard() {
   </div>
 
   const Widgets=<div className='flex flex-col sm:flex-row gap-8 justify-between items-center my-8'>
-      <Widget title={"Users"} value={34} Icon={<IoPerson size={20}/>}/>
-      <Widget title={"Chats"} value={3} Icon={<MdGroups size={20}/>}/>
-      <Widget title={"Messages"} value={453} Icon={<MdMessage size={20}/>}/>
+      <Widget title={"Users"} value={stats?.usersCount} Icon={<IoPerson size={20}/>}/>
+      <Widget title={"Chats"} value={stats?.totalChatsCount} Icon={<MdGroups size={20}/>}/>
+      <Widget title={"Messages"} value={stats?.messagesCount} Icon={<MdMessage size={20}/>}/>
   </div>
 
   return (
     <AdminLayout>
-        <div className='px-4'>
+        {
+          loading?<Spinner/>:
+          <div className='px-4'>
           {Appbar}
 
           <div className='flex flex-col lg:flex-row flex-wrap gap-8 justify-center items-center sm:items-stretch'>
             <div className='shadow-2xl py-8 px-14 rounded-2xl w-full max-w-[45rem]'>
               <p className='my-8  text-2xl'>Last Messages</p>
-              <LineChart value={[23,56,33,67,33,2]}/>
+              <LineChart value={stats?.messageChart||[]}/>
             </div>
 
             <div className='shadow-2xl p-4 rounded-2xl flex justify-center items-center w-full sm:w-1/2 relative max-w-[25rem]'>
-                <DoughnutChart labels={['Single Chats','Group Chats']} value={[23,66]}/>
+                <DoughnutChart 
+                labels={['Single Chats','Group Chats']}
+                 value={[stats?.totalChatsCount-stats?.groupsCount||0,stats?.groupsCount||0]}/>
                 <div className='absolute flex justify-center items-center gap-2 w-full h-full '>
                     <MdGroups size={20}/>
                     <p>Vs</p>
@@ -56,6 +75,7 @@ function Dashboard() {
 
           {Widgets}
         </div>
+        }
     </AdminLayout>
   )
 }

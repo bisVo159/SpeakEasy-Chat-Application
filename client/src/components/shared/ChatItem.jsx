@@ -42,7 +42,7 @@ function ChatItem({
 
       {
         isOnline && (
-          <div className='absolute top-1/2 right-4 w-[10px] h-[10px] rounded-lg bg-green-900 -translate-y-1/2'>
+          <div className=' w-[10px] h-[10px] rounded-lg bg-green-700  m-2'>
           </div>
         )
       }

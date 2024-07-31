@@ -37,7 +37,7 @@ function LineChart({value=[]}) {
         labels,
         datasets:[
             {
-                label: 'Revenue',
+                label: 'Messages',
                 data: value,
                 fill: true,
                 backgroundColor: 'rgba(175, 12, 192, 0.2)',

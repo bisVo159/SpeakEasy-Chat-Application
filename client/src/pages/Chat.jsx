@@ -3,12 +3,11 @@ import AppLayout from '../components/layout/AppLayout'
 import { MdAttachFile } from "react-icons/md";
 import { IoSend } from "react-icons/io5";
 import FileMenu from '../components/dialogs/FileMenu';
-import { sampleMessage } from '../components/constants/sampleData';
 import MessageComponent from '../components/shared/MessageComponent';
 import { getSocket } from '../socket';
-import { ALERT, NEW_MESSAGE, START_TYPING, STOP_TYPING } from '../components/constants/events';
+import { ALERT, CHAT_JOINED, CHAT_LEAVED, NEW_MESSAGE, START_TYPING, STOP_TYPING } from '../components/constants/events';
 import { useGetChatDetailsQuery, useGetMessegesQuery } from '../redux/api/api';
-import { TypingLoader,LayOutLoader } from '../components/layout/Loaders';
+import { TypingLoader, Spinner } from '../components/layout/Loaders';
 import { useErrors, useSocketEvents } from '../hooks/hook';
 import { useInfiniteScrollTop } from '6pp'
 import { useDispatch } from 'react-redux';
@@ -86,6 +85,7 @@ function Chat({chatId,user}) {
   }
 
   useEffect(()=>{
+    socket.emit(CHAT_JOINED,{userId:user._id,members})
     dispatch(removeNewMessagesAlert(chatId))
     // to avoid on first render
     return ()=>{
@@ -93,6 +93,7 @@ function Chat({chatId,user}) {
       setMessages([])
       setPage(1)
       setOldMessages([])
+      socket.emit(CHAT_LEAVED,{userId:user._id,members})
     }
   },[chatId])
 
@@ -150,7 +151,7 @@ function Chat({chatId,user}) {
 
   const allMessages=[...oldMessages,...messages]
 
-  return chatDetails.isLoading?<LayOutLoader/>:(
+  return chatDetails.isLoading?<Spinner/>:(
     <>
       <div
       ref={containerRef}

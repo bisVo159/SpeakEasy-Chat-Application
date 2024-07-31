@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser"
 import { v4 as uuid } from "uuid"
 import cors from 'cors'
 import {v2 as cloudinary} from "cloudinary"
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/events.js"
+import { CHAT_JOINED, CHAT_LEAVED, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, START_TYPING, STOP_TYPING } from "./constants/events.js"
 import {getSockets} from "./lib/helper.js"
 import { Message } from "./modals/message.js"
 import { corsOptions } from "./constants/config.js"
@@ -20,6 +20,7 @@ import chatRoute from "./routes/chat.js"
 import adminRoute from "./routes/admin.js"
 
 const userSocketIDs=new Map();
+const onlineUsers=new Set();
 
 dotenv.config({
     path: './.env'
@@ -102,7 +103,7 @@ io.on("connection",(socket)=>{
         try {
             await Message.create(messageForDB);
         } catch (error) {
-            console.log(error)
+            throw new Error(error)
         }
     })
 
@@ -114,10 +115,25 @@ io.on("connection",(socket)=>{
         const memberSocket=getSockets(members)
         socket.to(memberSocket).emit(STOP_TYPING,{chatId})
     })
+
+    socket.on(CHAT_JOINED,({userId,members})=>{
+        onlineUsers.add(userId.toString())
+
+        const membersSocket=getSockets(members);
+        io.to(membersSocket).emit(ONLINE_USERS,Array.from(onlineUsers))
+    })
+    socket.on(CHAT_LEAVED,({userId,members})=>{
+        onlineUsers.delete(userId.toString());
+
+        const membersSocket=getSockets(members);
+        io.to(membersSocket).emit(ONLINE_USERS,Array.from(onlineUsers))
+    })
     
     socket.on("disconnect",()=>{
         console.log("User Disconnected")
-        userSocketIDs.delete(user._id.toString());
+        onlineUsers.delete(socket.user._id.toString());
+        userSocketIDs.delete(socket.user._id.toString());
+        socket.broadcast.emit(ONLINE_USERS,Array.from(onlineUsers))
     });
 });
 

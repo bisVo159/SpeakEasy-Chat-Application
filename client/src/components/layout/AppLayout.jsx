@@ -1,4 +1,4 @@
-import React, {  useCallback, useEffect, useRef } from 'react'
+import React, {  useCallback, useEffect, useRef, useState } from 'react'
 import Header from './Header'
 import Title from '../shared/Title'
 import ChatList from '../specific/ChatList'
@@ -11,7 +11,7 @@ import { setIsDeleteMenu, setIsMobile, setSeletedDeleteChat } from '../../redux/
 import useOnClickOutside from '../../hooks/useOnClickOutside'
 import { useErrors, useSocketEvents } from '../../hooks/hook'
 import { getSocket } from '../../socket'
-import { NEW_MESSAGE_ALERT, NEW_REQUEST, REFETCH_CHATS } from '../constants/events'
+import { NEW_MESSAGE_ALERT, NEW_REQUEST, ONLINE_USERS, REFETCH_CHATS } from '../constants/events'
 import { incrementNotification, setNewMessagesAlert } from '../../redux/reducer/chat'
 import { getOrSaveFromStorage } from '../../lib/features'
 import DeleteChatMenu from '../dialogs/DeleteChatMenu'
@@ -26,6 +26,8 @@ const AppLayout=()=>WrappedComponent=> {
     const deleteMenuAnchor=useRef(null)
 
     const socket=getSocket();
+
+    const [onlineUsers,setOnlineUsers]=useState([])
 
     const {isMobile}=useSelector(state=>state.misc)
     const {user}=useSelector(state=>state.auth)
@@ -61,15 +63,21 @@ const AppLayout=()=>WrappedComponent=> {
     const newRequestListener=useCallback(()=>{
       dispatch(incrementNotification())
     },[])
+
     const refetchListener=useCallback(()=>{
       refetch()
       navigate("/")
     },[refetch,navigate])
 
+    const onlineUsersListner=useCallback((data)=>{
+      setOnlineUsers(data)
+    },[])
+
     const eventHandlers={
       [NEW_MESSAGE_ALERT]:newMessagesAlertListener,
       [NEW_REQUEST]:newRequestListener,
       [REFETCH_CHATS]:refetchListener,
+      [ONLINE_USERS]:onlineUsersListner,
     }
 
     useSocketEvents(socket,eventHandlers)
@@ -91,12 +99,13 @@ const AppLayout=()=>WrappedComponent=> {
                   chatId={chatId}
                   handleDeleteChat={handleDeleteChat}
                   newMessagesAlert={newMessagesAlert}
+                  onlineUsers={onlineUsers}
                 />
             </div>
           }
             
           <div className='grid  h-[calc(100vh-4rem)] grid-cols-12'>
-              <div className='h-full hidden sm:block sm:col-span-4 md:col-span-3 overflow-y-auto custom-scrollbar'>
+              <div className='h-full hidden sm:block sm:col-span-4 md:col-span-3 overflow-y-auto custom-scrollbar2'>
                   {
                     isLoading?<LayOutLoader/>:(
                       <ChatList 
@@ -104,6 +113,7 @@ const AppLayout=()=>WrappedComponent=> {
                       chatId={chatId}
                       handleDeleteChat={handleDeleteChat}
                       newMessagesAlert={newMessagesAlert}
+                      onlineUsers={onlineUsers}
                       />
                     )
                   }

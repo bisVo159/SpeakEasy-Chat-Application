@@ -23,14 +23,14 @@ const transformImage=(url="",width=100)=>{
 }
 
 const getLast7Days=()=>{
-    const currentDate=moment()
+    const currentDate=moment(Date.now())
     const last7Days=[];
 
     for(let i=0;i<7;i++){
         const dayDate=currentDate.clone().subtract(i,"days")
         last7Days.push(dayDate.format("dddd"))
     }
-    return last7Days
+    return last7Days.reverse()
 }
 
 const getOrSaveFromStorage=({key,value,get})=>{
