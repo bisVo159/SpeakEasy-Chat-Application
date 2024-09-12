@@ -7,7 +7,7 @@ const getSocket=()=>useContext(SocketContext)
 
 const SocketProvider=({children})=>{
 
-    const socket=useMemo(()=>io("http://localhost:3000",{withCredentials:true}),[])
+    const socket=useMemo(()=>io("https://speakeasy-backend-h5za.onrender.com",{withCredentials:true}),[])
 
     return(
         <SocketContext.Provider value={socket}>
